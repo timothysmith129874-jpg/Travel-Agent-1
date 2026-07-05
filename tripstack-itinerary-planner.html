@@ -1,0 +1,853 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TripStack Itinerary Planner</title>
+    <style>
+      :root {
+        color: #172033;
+        background: #f6f8fb;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-width: 360px;
+        min-height: 100vh;
+        background:
+          radial-gradient(circle at 15% 5%, rgba(71, 139, 255, 0.14), transparent 26%),
+          radial-gradient(circle at 88% 12%, rgba(25, 179, 145, 0.12), transparent 28%),
+          linear-gradient(180deg, #ffffff 0%, #f4f7fb 48%, #eef3f8 100%);
+      }
+
+      button,
+      input,
+      select {
+        font: inherit;
+      }
+
+      button {
+        cursor: pointer;
+      }
+
+      .app-shell {
+        min-height: 100vh;
+        padding: 24px;
+      }
+
+      .top-nav,
+      .hero,
+      .planner-layout,
+      .content-grid {
+        max-width: 1180px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .top-nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        padding: 14px 0;
+        color: #526070;
+      }
+
+      .top-nav strong {
+        color: #172033;
+        font-size: 1.25rem;
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 320px;
+        gap: 32px;
+        align-items: end;
+        margin-top: 28px;
+        margin-bottom: 32px;
+      }
+
+      .hero-copy p,
+      .section-heading p {
+        margin: 0 0 10px;
+        color: #2364d2;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .hero-copy h1 {
+        max-width: 780px;
+        margin: 0;
+        color: #111827;
+        font-size: clamp(2.7rem, 7vw, 5.9rem);
+        line-height: 0.95;
+      }
+
+      .hero-copy span {
+        display: block;
+        max-width: 670px;
+        margin-top: 22px;
+        color: #526070;
+        font-size: 1.08rem;
+        line-height: 1.7;
+      }
+
+      .hero-panel,
+      .panel {
+        border: 1px solid rgba(31, 42, 55, 0.08);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.88);
+        box-shadow: 0 18px 50px rgba(43, 59, 84, 0.08);
+      }
+
+      .hero-panel {
+        display: grid;
+        gap: 12px;
+        padding: 22px;
+      }
+
+      .hero-panel strong {
+        color: #111827;
+        font-size: 1.05rem;
+      }
+
+      .hero-panel span {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: #526070;
+      }
+
+      .hero-panel span::before {
+        content: "";
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: #19b391;
+      }
+
+      .planner-layout,
+      .content-grid {
+        display: grid;
+        gap: 22px;
+        margin-bottom: 22px;
+      }
+
+      .planner-layout {
+        grid-template-columns: 420px minmax(0, 1fr);
+        align-items: start;
+      }
+
+      .content-grid {
+        grid-template-columns: minmax(0, 1.45fr) minmax(320px, 0.75fr);
+      }
+
+      .panel {
+        padding: 24px;
+      }
+
+      .planner-panel {
+        position: sticky;
+        top: 20px;
+      }
+
+      .section-heading {
+        margin-bottom: 18px;
+      }
+
+      .section-heading h2,
+      h2 {
+        margin: 0;
+        color: #111827;
+      }
+
+      .section-heading h2 {
+        font-size: 1.45rem;
+      }
+
+      h2 {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 14px;
+        font-size: 1.05rem;
+      }
+
+      form {
+        display: grid;
+        gap: 16px;
+      }
+
+      .grid-2,
+      .grid-3 {
+        display: grid;
+        gap: 12px;
+      }
+
+      .grid-2 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .grid-3 {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      label span,
+      legend {
+        display: block;
+        margin-bottom: 7px;
+        color: #526070;
+        font-size: 0.82rem;
+        font-weight: 700;
+      }
+
+      input,
+      select {
+        width: 100%;
+        min-height: 44px;
+        border: 1px solid #d7dde7;
+        border-radius: 8px;
+        color: #111827;
+        background: #ffffff;
+        padding: 10px 12px;
+        outline: none;
+      }
+
+      input:focus,
+      select:focus {
+        border-color: #2364d2;
+        box-shadow: 0 0 0 4px rgba(35, 100, 210, 0.12);
+      }
+
+      fieldset {
+        margin: 0;
+        padding: 0;
+        border: 0;
+      }
+
+      .segmented {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+      }
+
+      .segmented button {
+        min-height: 40px;
+        border: 1px solid #d7dde7;
+        border-radius: 8px;
+        color: #526070;
+        background: #ffffff;
+        font-weight: 700;
+      }
+
+      .segmented button.active {
+        border-color: #2364d2;
+        color: #ffffff;
+        background: #2364d2;
+      }
+
+      .primary-action,
+      .secondary-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 9px;
+        width: 100%;
+        min-height: 46px;
+        border: 0;
+        border-radius: 8px;
+        font-weight: 800;
+      }
+
+      .primary-action {
+        color: #ffffff;
+        background: #2364d2;
+        box-shadow: 0 12px 24px rgba(35, 100, 210, 0.24);
+      }
+
+      .secondary-action {
+        color: #2364d2;
+        background: #eef4ff;
+      }
+
+      .results-grid,
+      .rank-list,
+      .timeline,
+      .archive-list {
+        display: grid;
+        gap: 12px;
+      }
+
+      .results-grid {
+        gap: 22px;
+      }
+
+      .score-strip {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 16px;
+        padding: 16px;
+        border-radius: 8px;
+        background: #f3f7fc;
+      }
+
+      .score-strip span {
+        display: block;
+        color: #526070;
+        font-size: 0.78rem;
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+
+      .rank-card {
+        display: grid;
+        grid-template-columns: 48px 1fr 52px;
+        gap: 14px;
+        align-items: center;
+        padding: 14px;
+        border: 1px solid #e3e8f0;
+        border-radius: 8px;
+        background: #ffffff;
+      }
+
+      .rank-card b,
+      .rank-card em {
+        display: grid;
+        min-height: 40px;
+        place-items: center;
+        border-radius: 8px;
+        color: #2364d2;
+        background: #eef4ff;
+        font-style: normal;
+      }
+
+      .rank-card em {
+        color: #0d8f73;
+        background: #ecfbf7;
+      }
+
+      .rank-card strong,
+      .rank-card span,
+      .rank-card small {
+        display: block;
+      }
+
+      .rank-card span,
+      .day-card p {
+        color: #526070;
+        font-size: 0.9rem;
+        line-height: 1.5;
+      }
+
+      .rank-card small,
+      .archive-list small,
+      .empty-copy,
+      .empty-state {
+        color: #7a8797;
+      }
+
+      .timeline {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .day-card,
+      .archive-list button {
+        border: 1px solid #e3e8f0;
+        border-radius: 8px;
+        background: #ffffff;
+      }
+
+      .day-card {
+        padding: 16px;
+      }
+
+      .day-card div {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        color: #2364d2;
+      }
+
+      .archive-list button {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 12px;
+        align-items: center;
+        width: 100%;
+        padding: 13px;
+        color: #172033;
+        text-align: left;
+      }
+
+      .empty-state {
+        display: grid;
+        min-height: 260px;
+        place-items: center;
+        align-content: center;
+        gap: 10px;
+        text-align: center;
+      }
+
+      @media (max-width: 980px) {
+        .hero,
+        .planner-layout,
+        .content-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .planner-panel {
+          position: static;
+        }
+      }
+
+      @media (max-width: 640px) {
+        .app-shell {
+          padding: 16px;
+        }
+
+        .top-nav {
+          display: block;
+        }
+
+        .top-nav span {
+          display: block;
+          margin-top: 6px;
+        }
+
+        .panel {
+          padding: 18px;
+        }
+
+        .grid-2,
+        .grid-3,
+        .segmented,
+        .timeline {
+          grid-template-columns: 1fr;
+        }
+
+        .rank-card {
+          grid-template-columns: 42px 1fr;
+        }
+
+        .rank-card em {
+          grid-column: 1 / -1;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="app-shell">
+      <nav class="top-nav">
+        <strong>TripStack</strong>
+        <span>Custom itineraries, ranked flights, curated hotels</span>
+      </nav>
+
+      <header class="hero">
+        <div class="hero-copy">
+          <p>Personal travel planning</p>
+          <h1>Build a ranked trip plan in minutes.</h1>
+          <span>Enter your route, travel style, dates, and budget. TripStack generates a day-by-day itinerary with scored flight and hotel options.</span>
+        </div>
+        <div class="hero-panel">
+          <strong>Planning engine</strong>
+          <span>Simulated travel search</span>
+          <span>Preference-based scoring</span>
+          <span>Saved trip archive</span>
+        </div>
+      </header>
+
+      <section class="planner-layout">
+        <aside class="panel planner-panel">
+          <div class="section-heading">
+            <p>Trip inputs</p>
+            <h2>Plan details</h2>
+          </div>
+
+          <form id="trip-form">
+            <div class="grid-2">
+              <label>
+                <span>Origin</span>
+                <input id="origin" value="SFO" />
+              </label>
+              <label>
+                <span>Depart</span>
+                <input id="departDate" type="date" />
+              </label>
+            </div>
+
+            <label>
+              <span>Destinations</span>
+              <input id="destinations" value="Lisbon, Porto" placeholder="Tokyo, Kyoto, Osaka" />
+            </label>
+
+            <div class="grid-3">
+              <label>
+                <span>Days</span>
+                <input id="days" type="number" min="1" max="21" value="7" />
+              </label>
+              <label>
+                <span>Travelers</span>
+                <input id="travelers" type="number" min="1" max="12" value="2" />
+              </label>
+              <label>
+                <span>Budget</span>
+                <input id="budget" type="number" min="300" step="100" value="3200" />
+              </label>
+            </div>
+
+            <fieldset>
+              <legend>Vibe</legend>
+              <div class="segmented" id="vibe-buttons">
+                <button type="button" data-vibe="culture">culture</button>
+                <button type="button" data-vibe="food" class="active">food</button>
+                <button type="button" data-vibe="outdoors">outdoors</button>
+                <button type="button" data-vibe="luxury">luxury</button>
+                <button type="button" data-vibe="budget">budget</button>
+                <button type="button" data-vibe="nightlife">nightlife</button>
+              </div>
+            </fieldset>
+
+            <div class="grid-2">
+              <label>
+                <span>Hotel style</span>
+                <select id="hotelStyle">
+                  <option value="boutique">Boutique</option>
+                  <option value="central">Central</option>
+                  <option value="resort">Resort</option>
+                  <option value="budget">Budget</option>
+                </select>
+              </label>
+              <label>
+                <span>Flight rank by</span>
+                <select id="flightPriority">
+                  <option value="price">Price</option>
+                  <option value="speed">Speed</option>
+                  <option value="comfort">Comfort</option>
+                </select>
+              </label>
+            </div>
+
+            <button class="primary-action" type="submit">Generate ranked trip</button>
+            <button class="secondary-action" type="button" id="sample-button">Load sample trip</button>
+          </form>
+        </aside>
+
+        <section class="panel">
+          <div class="section-heading">
+            <p>Ranked recommendations</p>
+            <h2>Best options</h2>
+          </div>
+          <div id="results-board" class="empty-state">Generate a trip to populate the ranking board.</div>
+        </section>
+      </section>
+
+      <section class="content-grid">
+        <div class="panel">
+          <div class="section-heading">
+            <p>Daily flow</p>
+            <h2>Itinerary</h2>
+          </div>
+          <div id="itinerary-board" class="empty-copy">Awaiting route data.</div>
+        </div>
+
+        <div class="panel">
+          <div class="section-heading">
+            <p>Saved trips</p>
+            <h2>Archive</h2>
+          </div>
+          <div id="archive-board" class="empty-copy">Saved trip plans appear here.</div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const airlines = ["AeroNova", "Cloudline", "Northstar Air", "VistaJet", "Metro Wings"];
+      const neighborhoods = ["Old Quarter", "Central Loop", "Riverside", "Museum District", "Market Row"];
+      const archiveKey = "tripstack-standalone-archive-v1";
+      let selectedVibe = "food";
+      let archive = JSON.parse(localStorage.getItem(archiveKey) || "[]");
+
+      const activities = {
+        culture: ["gallery crawl", "historic district walk", "architecture tour", "late museum hours"],
+        food: ["market breakfast", "chef-led lunch route", "street food crawl", "reservation-worthy dinner"],
+        outdoors: ["sunrise park trail", "waterfront ride", "botanical garden pause", "viewpoint picnic"],
+        luxury: ["spa reset", "private guide route", "design district browse", "tasting-menu evening"],
+        budget: ["free walking tour", "public garden break", "local transit loop", "night market snacks"],
+        nightlife: ["late brunch", "record shop route", "rooftop sunset", "live music circuit"],
+      };
+
+      const $ = (id) => document.getElementById(id);
+      const clamp = (value, min = 0, max = 100) => Math.max(min, Math.min(max, value));
+      const hashText = (text) => text.split("").reduce((total, char, index) => total + char.charCodeAt(0) * (index + 7), 137);
+      const pick = (items, seed) => items[Math.abs(seed) % items.length];
+
+      function defaultDepartDate() {
+        const date = new Date(Date.now() + 1000 * 60 * 60 * 24 * 32);
+        return date.toISOString().slice(0, 10);
+      }
+
+      function getRequest() {
+        return {
+          origin: $("origin").value.trim() || "Home Base",
+          destinations: $("destinations").value.split(",").map((item) => item.trim()).filter(Boolean),
+          days: Math.max(1, Math.min(21, Number($("days").value || 1))),
+          travelers: Math.max(1, Math.min(12, Number($("travelers").value || 1))),
+          budget: Math.max(300, Number($("budget").value || 300)),
+          vibe: selectedVibe,
+          departDate: $("departDate").value,
+          hotelStyle: $("hotelStyle").value,
+          flightPriority: $("flightPriority").value,
+        };
+      }
+
+      function rankFlights(options, request) {
+        const maxPrice = Math.max(...options.map((option) => option.price));
+        const minPrice = Math.min(...options.map((option) => option.price));
+        const maxDuration = Math.max(...options.map((option) => option.durationHours));
+        const minDuration = Math.min(...options.map((option) => option.durationHours));
+
+        return options
+          .map((option) => {
+            const priceScore = 100 - ((option.price - minPrice) / Math.max(1, maxPrice - minPrice)) * 100;
+            const speedScore = 100 - ((option.durationHours - minDuration) / Math.max(1, maxDuration - minDuration)) * 100;
+            const stopScore = option.stops === 0 ? 100 : option.stops === 1 ? 72 : 42;
+            const comfortScore = option.comfort * 10;
+            const weights =
+              request.flightPriority === "price"
+                ? { price: 0.44, speed: 0.2, stops: 0.18, comfort: 0.18 }
+                : request.flightPriority === "speed"
+                  ? { price: 0.2, speed: 0.42, stops: 0.24, comfort: 0.14 }
+                  : { price: 0.2, speed: 0.18, stops: 0.2, comfort: 0.42 };
+            const score = clamp(priceScore * weights.price + speedScore * weights.speed + stopScore * weights.stops + comfortScore * weights.comfort);
+            return {
+              ...option,
+              score: Math.round(score),
+              reasons: [
+                option.stops === 0 ? "direct route" : `${option.stops} stop route`,
+                request.flightPriority === "price" ? "strong fare score" : request.flightPriority === "speed" ? "fast timing" : "comfort weighted",
+                `$${option.price} fare`,
+              ],
+            };
+          })
+          .sort((a, b) => b.score - a.score)
+          .map((option, index) => ({ ...option, rank: index + 1 }));
+      }
+
+      function rankHotels(options, request) {
+        const maxRate = Math.max(...options.map((option) => option.nightlyRate));
+        const minRate = Math.min(...options.map((option) => option.nightlyRate));
+        const dailyRoomBudget = request.budget / Math.max(1, request.days) / 2;
+
+        return options
+          .map((option) => {
+            const priceScore = 100 - ((option.nightlyRate - minRate) / Math.max(1, maxRate - minRate)) * 100;
+            const budgetFit = option.nightlyRate <= dailyRoomBudget ? 100 : clamp(100 - (option.nightlyRate - dailyRoomBudget) * 0.5);
+            const vibeMatch = option.style === request.hotelStyle || option.style === request.vibe ? 100 : 68;
+            const score = clamp(option.rating * 14 + option.walkability * 1.5 + priceScore * 0.18 + budgetFit * 0.22 + vibeMatch * 0.2);
+            return {
+              ...option,
+              score: Math.round(score),
+              reasons: [`${option.rating.toFixed(1)} guest rating`, `${option.neighborhood} base`, option.nightlyRate <= dailyRoomBudget ? "fits daily budget" : "premium stretch pick"],
+            };
+          })
+          .sort((a, b) => b.score - a.score)
+          .map((option, index) => ({ ...option, rank: index + 1 }));
+      }
+
+      function createTripPlan(request) {
+        if (request.destinations.length === 0) request.destinations = ["Tokyo"];
+        const mainDestination = request.destinations[0];
+        const flightSeed = hashText(`${request.origin}-${request.destinations.join("|")}-${request.departDate}`);
+        const hotelSeed = hashText(`${mainDestination}-${request.hotelStyle}-${request.budget}`);
+
+        const flights = rankFlights(
+          Array.from({ length: 5 }, (_, index) => {
+            const stops = (flightSeed + index) % 4 === 0 ? 1 : (flightSeed + index) % 7 === 0 ? 2 : 0;
+            const durationHours = 2.5 + ((flightSeed + index * 19) % 11) + stops * 1.8;
+            const price = 180 + ((flightSeed + index * 113) % 640) + stops * 35;
+            const departHour = 6 + ((flightSeed + index * 3) % 13);
+            return {
+              airline: airlines[(flightSeed + index) % airlines.length],
+              route: `${request.origin} -> ${mainDestination}`,
+              depart: `${String(departHour).padStart(2, "0")}:20`,
+              arrive: `${String((departHour + Math.ceil(durationHours)) % 24).padStart(2, "0")}:05`,
+              durationHours: Number(durationHours.toFixed(1)),
+              stops,
+              price,
+              comfort: 6 + ((flightSeed + index * 5) % 5),
+            };
+          }),
+          request,
+        );
+
+        const hotels = rankHotels(
+          Array.from({ length: 5 }, (_, index) => {
+            const rate = 92 + ((hotelSeed + index * 67) % 280);
+            const style = index % 2 === 0 ? request.hotelStyle : pick(["boutique", "central", "resort", "budget", request.vibe], hotelSeed + index);
+            return {
+              name: `${pick(["Signal", "Arcade", "Circuit", "Postcard", "Waypoint"], hotelSeed + index)} ${mainDestination}`,
+              neighborhood: neighborhoods[(hotelSeed + index * 2) % neighborhoods.length],
+              nightlyRate: rate,
+              rating: Number((3.8 + ((hotelSeed + index * 11) % 13) / 10).toFixed(1)),
+              style,
+              walkability: 62 + ((hotelSeed + index * 7) % 35),
+            };
+          }),
+          request,
+        );
+
+        const itinerary = Array.from({ length: request.days }, (_, index) => {
+          const destination = request.destinations[index % request.destinations.length];
+          const seed = hashText(`${destination}-${request.vibe}-${index}`);
+          return {
+            day: index + 1,
+            destination,
+            morning: `${pick(activities[request.vibe], seed)} near ${pick(neighborhoods, seed + 1)}`,
+            afternoon: `${pick(activities[request.vibe], seed + 2)} with a flexible cafe stop`,
+            evening: `${pick(activities[request.vibe], seed + 3)} and ranked dinner shortlist`,
+            energy: index % 3 === 0 ? "medium" : index % 3 === 1 ? "high" : "low",
+          };
+        });
+
+        return {
+          id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()),
+          createdAt: new Date().toISOString(),
+          request,
+          title: `${request.destinations.join(" + ")} / ${request.days} day plan`,
+          flights,
+          hotels,
+          itinerary,
+          overallScore: Math.round((flights[0].score + hotels[0].score + Math.min(100, request.days * 7 + 35)) / 3),
+        };
+      }
+
+      function renderTrip(trip) {
+        $("results-board").className = "results-grid";
+        $("results-board").innerHTML = `
+          <div class="score-strip">
+            <div><span>Plan</span><strong>${trip.title}</strong></div>
+            <div><span>Fit score</span><strong>${trip.overallScore}</strong></div>
+          </div>
+          <section>
+            <h2>Ranked Flights</h2>
+            <div class="rank-list">
+              ${trip.flights
+                .map(
+                  (flight) => `
+                    <article class="rank-card">
+                      <b>#${flight.rank}</b>
+                      <div>
+                        <strong>${flight.airline}</strong>
+                        <span>${flight.route} / ${flight.depart}-${flight.arrive} / ${flight.durationHours}h</span>
+                        <small>${flight.reasons.join(" | ")}</small>
+                      </div>
+                      <em>${flight.score}</em>
+                    </article>
+                  `,
+                )
+                .join("")}
+            </div>
+          </section>
+          <section>
+            <h2>Ranked Hotels</h2>
+            <div class="rank-list">
+              ${trip.hotels
+                .map(
+                  (hotel) => `
+                    <article class="rank-card">
+                      <b>#${hotel.rank}</b>
+                      <div>
+                        <strong>${hotel.name}</strong>
+                        <span>${hotel.neighborhood} / $${hotel.nightlyRate}/night / ${hotel.style}</span>
+                        <small>${hotel.reasons.join(" | ")}</small>
+                      </div>
+                      <em>${hotel.score}</em>
+                    </article>
+                  `,
+                )
+                .join("")}
+            </div>
+          </section>
+        `;
+
+        $("itinerary-board").className = "timeline";
+        $("itinerary-board").innerHTML = trip.itinerary
+          .map(
+            (day) => `
+              <article class="day-card">
+                <div><b>DAY ${day.day}</b><span>${day.destination}</span></div>
+                <p>${day.morning}</p>
+                <p>${day.afternoon}</p>
+                <p>${day.evening}</p>
+                <small>${day.energy} energy</small>
+              </article>
+            `,
+          )
+          .join("");
+      }
+
+      function renderArchive() {
+        if (archive.length === 0) {
+          $("archive-board").className = "empty-copy";
+          $("archive-board").textContent = "Saved trip plans appear here.";
+          return;
+        }
+
+        $("archive-board").className = "archive-list";
+        $("archive-board").innerHTML = archive
+          .map(
+            (trip) => `
+              <button type="button" data-trip-id="${trip.id}">
+                <span>Open</span>
+                <span><strong>${trip.title}</strong><small>${new Date(trip.createdAt).toLocaleString()}</small></span>
+                <b>${trip.overallScore}</b>
+              </button>
+            `,
+          )
+          .join("");
+
+        document.querySelectorAll("[data-trip-id]").forEach((button) => {
+          button.addEventListener("click", () => {
+            const trip = archive.find((item) => item.id === button.dataset.tripId);
+            if (trip) renderTrip(trip);
+          });
+        });
+      }
+
+      function saveTrip(trip) {
+        archive = [trip, ...archive.filter((item) => item.id !== trip.id)].slice(0, 24);
+        localStorage.setItem(archiveKey, JSON.stringify(archive));
+        renderArchive();
+      }
+
+      function generateAndRender() {
+        const trip = createTripPlan(getRequest());
+        saveTrip(trip);
+        renderTrip(trip);
+      }
+
+      $("departDate").value = defaultDepartDate();
+      $("trip-form").addEventListener("submit", (event) => {
+        event.preventDefault();
+        generateAndRender();
+      });
+      $("sample-button").addEventListener("click", generateAndRender);
+      document.querySelectorAll("[data-vibe]").forEach((button) => {
+        button.addEventListener("click", () => {
+          selectedVibe = button.dataset.vibe;
+          document.querySelectorAll("[data-vibe]").forEach((item) => item.classList.toggle("active", item === button));
+        });
+      });
+
+      renderArchive();
+    </script>
+  </body>
+</html>
